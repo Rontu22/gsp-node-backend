@@ -2,11 +2,13 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
+const cors = require("cors");
 
 // Create the Express app
 const app = express();
 
 // Middleware
+app.use(cors()); // Cross-origin resource sharing
 app.use(morgan("dev")); // Logging
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

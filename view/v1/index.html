@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Chat App</title>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="message-list" id="messageList">
+        <!-- Messages will be displayed here -->
+      </div>
+      <div class="message-input">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type your message..."
+        />
+        <button id="sendMessageBtn">Send</button>
+      </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+      const redis = require("redis");
+
+      const redisClient = redis.createClient();
+
+      // Replace 'groupId' with the actual group ID
+      const groupId = 1;
+
+      // Subscribe to the Redis pub-sub topic for real-time updates
+      redisClient.subscribe(groupId.toString());
+
+      // Listen for received messages from the Redis channel
+      redisClient.on("message", (channel, message) => {
+        if (channel === groupId.toString()) {
+          const messageData = JSON.parse(message);
+          // Display the received message in the frontend
+          const messageDiv = document.createElement("div");
+          messageDiv.className = "message";
+          messageDiv.textContent = `${messageData.senderName}: ${messageData.message}`;
+          messageList.appendChild(messageDiv);
+        }
+      });
+
+      // Your existing code to send messages...
+    </script>
+  </body>
+</html>

@@ -6,6 +6,11 @@
 const db = require("../database/index");
 // chatController.js
 
+const Redis = require("ioredis");
+
+// Create a Redis client
+const redisClient = new Redis();
+
 exports.sendMessage = async (req, res) => {
   try {
     const {
@@ -31,7 +36,48 @@ exports.sendMessage = async (req, res) => {
       senderName,
     ]);
 
+    // Publish the message to the Redis pub-sub topic (groupId)
+    const messageData = {
+      groupId,
+      message,
+      senderId,
+      senderName,
+    };
+    redisClient.publish(groupId.toString(), JSON.stringify(messageData));
+
     res.status(201).json({ message: "Message sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.realTimeMessages = async (req, res) => {
+  try {
+    const { recipientId } = req.params;
+
+    // Create a Redis subscriber for the recipient's channel using ioredis
+    const redisSubscriber = new Redis();
+    const recipientChannel = recipientId.toString(); // Update this to the appropriate recipient channel format
+    await redisSubscriber.subscribe(recipientChannel);
+
+    // Handle incoming messages for the recipient
+    redisSubscriber.on("message", (channel, message) => {
+      if (channel === recipientChannel) {
+        const {
+          senderId,
+          senderName,
+          message: receivedMessage,
+        } = JSON.parse(message);
+        res.json({ senderId, senderName, message: receivedMessage });
+      }
+    });
+
+    // Unsubscribe and close the Redis subscriber when the response is finished
+    res.on("finish", async () => {
+      await redisSubscriber.unsubscribe();
+      await redisSubscriber.quit();
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
