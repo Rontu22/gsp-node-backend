@@ -16,6 +16,7 @@ const ioInstance = socketManager.getIoInstance();
 const chatRoute = ioInstance.of("/chat");
 
 chatRoute.on("connection", async (socket) => {
+  console.log("A User Connected : ", socket.id);
   socket.on("subscribeToChannels", async (data) => {
     const { clientId, channels } = data;
 
