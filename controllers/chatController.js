@@ -14,82 +14,10 @@ const socketManager = require("../socket/socket-manager");
 const ioInstance = socketManager.getIoInstance();
 
 const chatRoute = ioInstance.of("/chat");
-// chatRoute.on("connection", async (socket) => {
-//   const recipientChannel = `Group-1`;
-//   await redisSubscriber.subscribe(recipientChannel);
-
-//   // Handle incoming messages for the recipient
-//   redisSubscriber.on("message", (channel, message) => {
-//     console.log("Channel is created : ", channel);
-//     socket.broadcast.emit(`${channel}`, { data: message });
-//   });
-
-//   socket.on("disconnect", async () => {
-//     console.log("User Disconnected : ", socket.id);
-//   });
-// });
-
-// chatRoute.on("connection", async (socket) => {
-//   socket.on("subscribeToChannels", async (data) => {
-//     const { channels } = data;
-
-//     // Subscribe to the channels
-//     channels.forEach(async (channel) => {
-//       console.log("Channel is created : 2 ", channel);
-//       await redisSubscriber.subscribe(channel);
-
-//       redisSubscriber.on("message", (channel, message) => {
-//         console.log("Channel is created : ", channel);
-//         socket.broadcast.emit(channel, { data: message });
-//       });
-//     });
-
-//     socket.on("disconnect", async () => {
-//       console.log("User Disconnected : ", socket.id);
-//     });
-//   });
-// });
-
-// chatRoute.on("connection", async (socket) => {
-//   let subscribedChannels = [];
-
-//   socket.on("subscribeToChannels", async (data) => {
-//     const { channels } = data;
-
-//     // Unsubscribe from previously subscribed channels
-//     subscribedChannels.forEach((channel) => {
-//       redisSubscriber.unsubscribe(channel);
-//     });
-
-//     // Subscribe to the new list of channels
-//     subscribedChannels = channels;
-//     subscribedChannels.forEach(async (channel) => {
-//       await redisSubscriber.subscribe(channel);
-//     });
-
-//     // Send the list of subscribed channels back to the client
-//     socket.emit("subscribedChannels", { channels: subscribedChannels });
-
-//     socket.on("disconnect", async () => {
-//       console.log("User Disconnected : ", socket.id);
-//     });
-//   });
-
-//   // Handle incoming messages for all subscribed channels
-//   redisSubscriber.on("message", (channel, message) => {
-//     if (subscribedChannels.includes(channel)) {
-//       ioInstance.to(socket.id).emit(channel, { data: message });
-//     }
-//   });
-// });
-
-const subscriptions = {};
 
 chatRoute.on("connection", async (socket) => {
   socket.on("subscribeToChannels", async (data) => {
     const { clientId, channels } = data;
-    console.log("Channels : ", channels);
-    console.log("Client ID : ", clientId);
 
     // Subscribe to the Redis channels
     channels.forEach(async (channel) => {
@@ -113,8 +41,6 @@ const chatGroupRoute = ioInstance.of("/chat-group");
 chatGroupRoute.on("connection", async (socket) => {
   socket.on("subscribeToChannels", async (data) => {
     const { clientId, channel } = data;
-    console.log("Channel : ", channel);
-    console.log("Client ID : ", clientId);
 
     // Subscribe to the Redis channel
     await redisSubscriber.subscribe(channel);
@@ -212,61 +138,11 @@ exports.updateMessage = async (req, res) => {
   }
 };
 
-// This is a realtime route :
-// io.on("connection", (socket) => {
-//   console.log("A user connected 2");
-
-//   socket.on("disconnect", () => {
-//     console.log("A user disconnected");
-//   });
-// });
-
-exports.realTimeMessages = async (req, res) => {};
-
-// exports.realTimeMessages = async (req, res) => {
-//   try {
-//     const { recipientId } = req.params;
-
-//     io.to(recipientId).emit("join", recipientId);
-
-//     // Create a Redis subscriber for the recipient's channel using ioredis
-//     const redisSubscriber = new Redis();
-//     const recipientChannel = recipientId.toString(); // Update this to the appropriate recipient channel format
-//     await redisSubscriber.subscribe(recipientChannel);
-
-//     // Handle incoming messages for the recipient
-//     redisSubscriber.on("message", (channel, message) => {
-//       if (channel === recipientChannel) {
-//         const {
-//           senderId,
-//           senderName,
-//           message: receivedMessage,
-//         } = JSON.parse(message);
-//         io.to(recipientId).emit("newMessage", {
-//           senderId,
-//           senderName,
-//           message: receivedMessage,
-//         });
-//         // res.json({ senderId, senderName, message: receivedMessage });
-//       }
-//     });
-
-//     // Unsubscribe and close the Redis subscriber when the response is finished
-//     res.on("finish", async () => {
-//       await redisSubscriber.unsubscribe();
-//       await redisSubscriber.quit();
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
 exports.getAllMessages = async (req, res) => {
   try {
-    const query = "SELECT * FROM chats";
-    const [messages] = await db.query(query);
-
+    const { groupId } = req.query;
+    const query = "SELECT * FROM chats WHERE groupId = ?";
+    const [messages] = await db.query(query, [groupId]);
     res.json(messages);
   } catch (error) {
     console.error(error);
@@ -295,9 +171,10 @@ exports.getMessageById = async (req, res) => {
 exports.getAllMessagesFromStartDate = async (req, res) => {
   try {
     const data = req.body;
-    const { startDate } = data;
-    const query = "SELECT * FROM chats WHERE sentTime >= ?";
-    const [messages] = await db.query(query, [startDate]);
+    const { startDate, groupId } = data;
+    const query =
+      "SELECT * FROM chats WHERE sentTime >= ? and groupId = ? ORDER BY sentTime ASC";
+    const [messages] = await db.query(query, [startDate, groupId]);
     if (!messages) {
       return res.status(404).json({ message: "Messages not found" });
     }
@@ -310,9 +187,10 @@ exports.getAllMessagesFromStartDate = async (req, res) => {
 
 exports.receiveLastMessage = async (req, res) => {
   try {
-    const query = "SELECT * FROM chats ORDER BY sentTime DESC LIMIT 1";
-    const [lastMessage] = await db.query(query);
-
+    const { groupId } = req.query;
+    const query =
+      "SELECT * FROM chats where groupId = ? ORDER BY sentTime DESC LIMIT 1";
+    const [lastMessage] = await db.query(query, [groupId]);
     res.json(lastMessage);
   } catch (error) {
     console.error(error);
@@ -322,10 +200,11 @@ exports.receiveLastMessage = async (req, res) => {
 
 exports.getAllMessagesFromMessageId = async (req, res) => {
   try {
-    const messageId = req.query.messageId;
+    const { messageId, groupId } = req.query;
 
-    const query = "SELECT * FROM chats WHERE id >= ?";
-    const [messages] = await db.query(query, [messageId]);
+    const query =
+      "SELECT * FROM chats WHERE id >= ? and groupId = ? ORDER BY sentTime ASC";
+    const [messages] = await db.query(query, [messageId, groupId]);
 
     res.json(messages);
   } catch (error) {
