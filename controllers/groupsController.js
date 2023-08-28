@@ -53,14 +53,31 @@ exports.addGroupMembers = async (req, res) => {
     const { groupId, users } = req.body;
 
     // Insert group-user mappings
+    // Insert group-user mappings
     if (users && users.length > 0) {
-      const insertMappingsQuery =
-        "INSERT INTO group_user_mappings (groupId, userId) VALUES (?, ?)";
-      const mappingValues = users.map((userId) => [groupId, userId]);
-      await db.query(insertMappingsQuery, mappingValues);
+      const insertMappingsQuery = `
+          INSERT INTO \`group-user-mappings\` (groupId, userId)
+          VALUES ${users.map((userId) => `(${groupId}, ${userId})`).join(", ")}
+        `;
+      await db.query(insertMappingsQuery);
     }
 
     res.json({ message: "Group members added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getAllGroupsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const query =
+      "SELECT * FROM `groups` WHERE id IN (SELECT groupId FROM `group-user-mappings` WHERE userId = ?) order by id";
+    const [groups] = await db.query(query, [userId]);
+
+    res.json(groups);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
