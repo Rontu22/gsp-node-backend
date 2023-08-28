@@ -9,8 +9,6 @@ router.post("/update-message", chatController.updateMessage);
 
 router.get("/get-all-messages", chatController.getAllMessages);
 
-router.get("/real-time-messages", chatController.realTimeMessages);
-
 router.get("/get-message-by-id/:id", chatController.getMessageById);
 
 router.post(
