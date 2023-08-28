@@ -7,6 +7,25 @@ const socketManager = require("./socket/socket-manager");
 
 // Create the Express app
 const app = express();
+app.use(function (req, res, next) {
+  // const allowedOrigins = "*";
+  // const origin = req.headers.origin;
+  // if (allowedOrigins.includes(origin)) {
+  //   res.setHeader("Access-Control-Allow-Origin", origin);
+  // }
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  next();
+});
+app.use(cors()); // Cross-origin resource sharing
 
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
@@ -35,7 +54,7 @@ io.on("connection", (socket) => {
 });
 
 // Middleware
-app.use(cors()); // Cross-origin resource sharing
+
 app.use(morgan("dev")); // Logging
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -46,7 +65,7 @@ const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chats");
 const groupRoutes = require("./routes/groups");
 const usersRoute = require("./routes/users");
-app.use("/api/v1", authRoutes); // Mount your API routes
+app.use("/api/v1/auth", authRoutes); // Mount your API routes
 app.use("/api/v1/chats", chatRoutes); // Mount your API routes
 app.use("/api/v1/groups", groupRoutes); // Mount your API routes
 app.use("/api/v1/users", usersRoute); // Mount your API routes
