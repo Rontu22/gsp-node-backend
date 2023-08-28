@@ -8,12 +8,15 @@ const socketManager = require("./socket/socket-manager");
 // Create the Express app
 const app = express();
 app.use(function (req, res, next) {
-  // const allowedOrigins = "*";
-  // const origin = req.headers.origin;
-  // if (allowedOrigins.includes(origin)) {
-  //   res.setHeader("Access-Control-Allow-Origin", origin);
-  // }
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const allowedOrigins = [
+    "https://localhost:8888",
+    "https://localhost:5000",
+    "http://localhost:5000",
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
@@ -35,7 +38,7 @@ app.get("/", (req, res) => {
   const options = {
     root: path.join(__dirname),
   };
-  const fileName = "view/v3/index.html";
+  const fileName = "view/v3/index2.html";
   res.sendFile(fileName, options);
 });
 
