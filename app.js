@@ -4,35 +4,47 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
 const socketManager = require("./socket/socket-manager");
+const http = require("http");
 
 // Create the Express app
 const app = express();
-app.use(function (req, res, next) {
-  const allowedOrigins = [
-    "https://localhost:8888",
-    "https://localhost:5000",
-    "http://localhost:5000",
-  ];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With,content-type"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  next();
-});
-app.use(cors()); // Cross-origin resource sharing
 
-const http = require("http").Server(app);
-const io = require("socket.io")(http);
+const { Server } = require("socket.io");
+app.use(cors()); // Cross-origin resource sharing
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+// app.use(function (req, res, next) {
+//   const allowedOrigins = [
+//     "https://localhost:8888",
+//     "https://localhost:5000",
+//     "http://localhost:5000",
+//   ];
+//   const origin = req.headers.origin;
+//   if (allowedOrigins.includes(origin)) {
+//     res.setHeader("Access-Control-Allow-Origin", origin);
+//   }
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+//   );
+//   res.setHeader(
+//     "Access-Control-Allow-Headers",
+//     "X-Requested-With,content-type"
+//   );
+//   res.setHeader("Access-Control-Allow-Credentials", true);
+//   next();
+// });
+
+// const io = require("socket.io")(http);
 socketManager.initialize(io);
+
+// server.listen(8082, () => console.log("Server running on port 8082"));
 
 app.get("/", (req, res) => {
   const options = {
@@ -79,4 +91,4 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-module.exports = { io, app, http }; // Export the Express app
+module.exports = { io, app, http, server }; // Export the Express app
