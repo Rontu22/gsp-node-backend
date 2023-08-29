@@ -10,7 +10,7 @@ app.get("/", (req, res) => {
   const options = {
     root: path.join(__dirname),
   };
-  const fileName = "view/v3/index.html";
+  const fileName = "view/v3/index2.html";
   res.sendFile(fileName, options);
 });
 

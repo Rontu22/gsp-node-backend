@@ -80,10 +80,12 @@ const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chats");
 const groupRoutes = require("./routes/groups");
 const usersRoute = require("./routes/users");
+const adminRoute = require("./routes/admin");
 app.use("/api/v1/auth", authRoutes); // Mount your API routes
 app.use("/api/v1/chats", chatRoutes); // Mount your API routes
 app.use("/api/v1/groups", groupRoutes); // Mount your API routes
 app.use("/api/v1/users", usersRoute); // Mount your API routes
+app.use("/api/v1/admin", adminRoute); // Mount your API routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
