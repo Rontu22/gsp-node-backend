@@ -1,10 +1,10 @@
 console.log("**********CONNECTED TO PROD**********");
 module.exports = {
   db: {
-    host: "localhost",
+    host: "containers-us-west-193.railway.app",
     user: "root",
-    password: "123456",
-    port: "9005",
+    password: "JexMxZ9ky82S3MzsLEV9",
+    port: "7183",
     name: "gsp_backend",
   },
   // Other dev-specific configurations

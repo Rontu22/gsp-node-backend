@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.2/socket.io.js"
+      integrity="sha512-VJ6+sp2E5rFQk05caiXXzQd1wBABpjEj1r5kMiLmGAAgwPItw1YpqsCCBtq8Yr1x6C49/mTpRdXtq8O2RcZhlQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+  <body>
+    <p>THIS IS A TEST FILE INDEX 2</p>
+    <script>
+      //   const socket = io();
+      //   socket.on("message", (data) => {
+      //     document.write(data);
+      //   });
+      //   socket.on("myCustomEvent", (data) => {
+      //     document.write(data.description);
+      //   });
+      //   socket.emit("clientCEvent", { test: "A Custom client side event" });
+
+      //   //   socket.on("broadcast", (data) => {
+      //   //     document.body.innerHTML = "";
+      //   //     document.write(data.description);
+      //   //   });
+      //   socket.on("newUserConnected", (data) => {
+      //     document.body.innerHTML = "";
+      //     document.write(data.description);
+      //   });
+
+      //   const socket = io("/chat");
+
+      //   // Emit the subscribeToChannels event when connected
+      //   socket.on("connect", () => {
+      //     const channels = ["Group-1", "Group-2", "Group-3"]; // Get the list of channels dynamically
+      //     socket.emit("subscribeToChannels", { channels });
+      //   });
+
+      //   // Listen for the list of subscribed channels
+      //   socket.on("subscribedChannels", (data) => {
+      //     const { channels } = data;
+      //     console.log("Subscribed to channels:", channels);
+      //   });
+
+      //   // Listen for messages from the subscribed channels
+      //   socket.on("Group-1", (message) => {
+      //     console.log("Received message from Group-1:", message.data);
+      //   });
+
+      //   socket.on("Group-2", (message) => {
+      //     console.log("Received message from Group-2:", message.data);
+      //   });
+
+      //   socket.on("Group-3", (message) => {
+      //     console.log("Received message from Group-3:", message.data);
+      //   });
+      console.log("CAME HERE ");
+
+      const socket = io("/chat-group");
+
+      // Example client IDs
+      //   const clientId1 = "client1";
+      //   const clientId2 = "client2";
+      //   console.log("CAME HERE ");
+
+      //   // Emit the subscribeToChannels event when connected
+      //   socket.on("connect", () => {
+      //     // Subscribe client1 to Group-1 and Group-2
+      //     socket.emit("subscribeToChannels", {
+      //       clientId: clientId1,
+      //       channels: ["Group-1", "Group-2"],
+      //     });
+
+      //     // Subscribe client2 to Group-3 and Group-2
+      //     socket.emit("subscribeToChannels", {
+      //       clientId: clientId2,
+      //       channels: ["Group-3", "Group-2"],
+      //     });
+      //   });
+
+      //   // Listen for the list of subscribed channels
+      //   socket.on("subscribedChannels", (data) => {
+      //     const { channels } = data;
+      //     console.log("Subscribed to channels:", channels);
+      //   });
+
+      //   // Listen for messages from the subscribed channels
+      //   socket.on("Group-1", (message) => {
+      //     console.log("Received message from Group-1:", message.data);
+      //   });
+
+      //   socket.on("Group-2", (message) => {
+      //     console.log("Received message from Group-2:", message.data);
+      //   });
+
+      //   socket.on("Group-3", (message) => {
+      //     console.log("Received message from Group-3:", message.data);
+      //   });
+    </script>
+  </body>
+</html>
