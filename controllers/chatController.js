@@ -16,26 +16,30 @@ const ioInstance = socketManager.getIoInstance();
 const chatRoute = ioInstance.of("/chat");
 
 chatRoute.on("connection", async (socket) => {
-  console.log("A User Connected : ", socket.id);
-  socket.on("subscribeToChannels", async (data) => {
-    const { clientId, channels } = data;
+  try {
+    console.log("A User Connected : ", socket.id);
+    socket.on("subscribeToChannels", async (data) => {
+      const { clientId, channels } = data;
 
-    // Subscribe to the Redis channels
-    channels.forEach(async (channel) => {
-      await redisSubscriber.subscribe(channel);
-    });
+      // Subscribe to the Redis channels
+      channels.forEach(async (channel) => {
+        await redisSubscriber.subscribe(channel);
+      });
 
-    redisSubscriber.on("message", (channel, message) => {
-      if (channels.includes(channel)) {
-        socket.emit(channel, { data: JSON.parse(message) });
-      }
-    });
+      redisSubscriber.on("message", (channel, message) => {
+        if (channels.includes(channel)) {
+          socket.emit(channel, { data: JSON.parse(message) });
+        }
+      });
 
-    socket.on("disconnect", async () => {
-      console.log("User Disconnected : ", socket.id);
-      // Remove the client's subscriptions and unsubscribe from Redis channels
+      socket.on("disconnect", async () => {
+        console.log("User Disconnected : ", socket.id);
+        // Remove the client's subscriptions and unsubscribe from Redis channels
+      });
     });
-  });
+  } catch (error) {
+    console.log("Error in chatRoute : ", error);
+  }
 });
 
 const chatGroupRoute = ioInstance.of("/chat-group");
