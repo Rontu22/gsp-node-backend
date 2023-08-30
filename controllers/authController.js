@@ -9,23 +9,51 @@ const smsService = require("../services/smsService");
 // Function to register a new user
 exports.register = async (req, res) => {
   try {
-    const { mobile, name, address, state, pin } = req.body;
+    const { mobile, name, address, state, pin, designation, dateOfBirth } =
+      req.body;
     const isUserPresent = await isUserDataPresent(mobile);
     if (isUserPresent) {
       return res.status(400).json({ message: "User already exists" });
     }
-    await insertUserData(mobile, name, address, state, pin);
-    res.json({ message: "User registered successfully" });
+    const result = await insertUserData(
+      mobile,
+      name,
+      address,
+      state,
+      pin,
+      designation,
+      dateOfBirth
+    );
+    res.json({
+      userId: result[0].insertId,
+      message: "User registered successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-const insertUserData = async (mobile, name, address, state, pin) => {
+const insertUserData = async (
+  mobile,
+  name,
+  address,
+  state,
+  pin,
+  designation,
+  dateOfBirth
+) => {
   try {
-    const sql = `INSERT INTO users (mobile, name, address, state, pin) VALUES (?, ?, ?, ?, ?)`;
-    const result = await db.query(sql, [mobile, name, address, state, pin]);
+    const sql = `INSERT INTO users (mobile, name, address, state, pin, designation, dateOfBirth) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const result = await db.query(sql, [
+      mobile,
+      name,
+      address,
+      state,
+      pin,
+      designation,
+      dateOfBirth,
+    ]);
     return result;
   } catch (error) {
     console.error("Error in insertUserData : ", error);
@@ -33,22 +61,10 @@ const insertUserData = async (mobile, name, address, state, pin) => {
   }
 };
 
-// exports.sendOtp = async (req, res) => {
-//   try {
-//     const { mobile } = req.body;
-//     const otp = Math.floor(100000 + Math.random() * 900000);
-//     const result = await smsService.sendOtpSms(mobile, otp);
-//     res.json({ message: "OTP is sent" });
-//   } catch (error) {
-//     console.error("Error in sendOtp : ", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
 exports.sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
-    const otp = generateOTP(); // Implement OTP generation logic
+    const otp = generateOTP();
     // Save the OTP to the database along with the mobile number
     await saveOTPCode(mobile, otp);
 

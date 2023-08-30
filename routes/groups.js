@@ -13,4 +13,6 @@ router.get(
   groupController.getAllGroupsByUserId
 );
 
+router.get("/get-all-group-members", groupController.getAllGroupMembers);
+
 module.exports = router;
