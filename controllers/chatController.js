@@ -7,9 +7,17 @@ const db = require("../database/index");
 
 const Redis = require("ioredis");
 
+const redisConfig = {
+  port: process.env.REDIS_PORT,
+  host: process.env.REDIS_HOST,
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+  db: process.env.REDIS_DB,
+};
+
 // Create a Redis client
-const redisClient = new Redis();
-const redisSubscriber = new Redis();
+const redisClient = new Redis(redisConfig);
+const redisSubscriber = new Redis(redisConfig);
 const socketManager = require("../socket/socket-manager");
 const ioInstance = socketManager.getIoInstance();
 
