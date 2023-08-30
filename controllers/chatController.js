@@ -97,10 +97,10 @@ exports.sendMessage = async (req, res) => {
       senderId,
       senderName,
       messageId: insertedData[0].insertId,
+      sentTime: new Date().toISOString(),
       messageType: "CREATED",
     };
     const groupName = `Group-${groupId}`;
-    console.log("HERE : ", groupName);
 
     redisClient.publish(groupName, JSON.stringify(messageData));
 
