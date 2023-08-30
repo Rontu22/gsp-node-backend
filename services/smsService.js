@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 
 AWS.config.update({
-  region: "ap-south-1",
+  region: "us-east-1",
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_KEY,
 });
@@ -16,8 +16,18 @@ exports.sendOtpSms = async (phoneNumber, otp) => {
       PhoneNumber: phoneNumber,
     };
 
-    const result = await sns.publish(params).promise();
-    return result;
+    const publishTextPromise = new AWS.SNS({ apiVersion: "2010-03-31" })
+      .publish(params)
+      .promise();
+
+    publishTextPromise
+      .then(function (data) {
+        console.log("MessageID is " + data.MessageId);
+      })
+      .catch(function (err) {
+        console.error(err, err.stack);
+      });
+    return true;
   } catch (error) {
     console.error("Failed to send SMS:", error);
     return false;
