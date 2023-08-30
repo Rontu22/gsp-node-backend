@@ -22,15 +22,17 @@ chatRoute.on("connection", async (socket) => {
       const { clientId, channels } = data;
 
       // Subscribe to the Redis channels
-      channels.forEach(async (channel) => {
-        await redisSubscriber.subscribe(channel);
-      });
+      if (channels && channels.length > 0) {
+        channels.forEach(async (channel) => {
+          await redisSubscriber.subscribe(channel);
+        });
 
-      redisSubscriber.on("message", (channel, message) => {
-        if (channels.includes(channel)) {
-          socket.emit(channel, { data: JSON.parse(message) });
-        }
-      });
+        redisSubscriber.on("message", (channel, message) => {
+          if (channels.includes(channel)) {
+            socket.emit(channel, { data: JSON.parse(message) });
+          }
+        });
+      }
 
       socket.on("disconnect", async () => {
         console.log("User Disconnected : ", socket.id);
