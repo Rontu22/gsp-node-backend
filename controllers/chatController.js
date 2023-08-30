@@ -142,9 +142,12 @@ exports.updateMessage = async (req, res) => {
 exports.getAllMessages = async (req, res) => {
   try {
     const { groupId } = req.query;
-    const query = "SELECT * FROM chats WHERE groupId = ?";
-    const [messages] = await db.query(query, [groupId]);
-    res.json(messages);
+    const limit = parseInt(req.query.limit) || 1000;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const query = "SELECT * FROM chats WHERE groupId = ? LIMIT ? OFFSET ?";
+    const [messages] = await db.query(query, [groupId, limit, offset]);
+    return res.json(messages);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -155,7 +158,7 @@ exports.getMessageById = async (req, res) => {
   try {
     const messageId = req.params.id;
 
-    const query = "SELECT * FROM chats WHERE id = ?";
+    const query = "SELECT * FROM chats WHERE id = ? limit 1";
     const [message] = await db.query(query, [messageId]);
 
     if (!message) {
@@ -173,13 +176,21 @@ exports.getAllMessagesFromStartDate = async (req, res) => {
   try {
     const data = req.body;
     const { startDate, groupId } = data;
+    const limit = parseInt(req.query.limit) || 1000;
+    const offset = parseInt(req.query.offset) || 0;
+
     const query =
-      "SELECT * FROM chats WHERE sentTime >= ? and groupId = ? ORDER BY sentTime ASC";
-    const [messages] = await db.query(query, [startDate, groupId]);
+      "SELECT * FROM chats WHERE sentTime >= ? and groupId = ? LIMIT ? OFFSET ?";
+    const [messages] = await db.query(query, [
+      startDate,
+      groupId,
+      limit,
+      offset,
+    ]);
     if (!messages) {
       return res.status(404).json({ message: "Messages not found" });
     }
-    res.json(messages);
+    return res.json(messages);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -202,12 +213,21 @@ exports.receiveLastMessage = async (req, res) => {
 exports.getAllMessagesFromMessageId = async (req, res) => {
   try {
     const { messageId, groupId } = req.query;
+    const limit = parseInt(req.query.limit) || 1000;
+    const offset = parseInt(req.query.offset) || 0;
 
     const query =
-      "SELECT * FROM chats WHERE id >= ? and groupId = ? ORDER BY sentTime ASC";
-    const [messages] = await db.query(query, [messageId, groupId]);
-
-    res.json(messages);
+      "SELECT * FROM chats WHERE id >= ? and groupId = ? LIMIT ? OFFSET ?";
+    const [messages] = await db.query(query, [
+      messageId,
+      groupId,
+      limit,
+      offset,
+    ]);
+    if (!messages) {
+      return res.status(404).json({ message: "Messages not found" });
+    }
+    return res.json(messages);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
