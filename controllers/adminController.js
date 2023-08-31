@@ -152,18 +152,28 @@ exports.approveAllUsers = async (req, res) => {
       await db.query(sql, [users]);
 
       // add all users in `group-user-mappings`
-      const insertMappingsQuery = `
-          INSERT INTO \`group-user-mappings\` (groupId, userId)
-          VALUES ${users
-            .map((userId) => `(${DEFAULT_GROUP_ID}, ${userId})`)
-            .join(", ")}
-        `;
-      await db.query(insertMappingsQuery);
+      await addUsersToGroup(users, DEFAULT_GROUP_ID);
     }
 
     res.json({ message: "Users approved successfully" });
   } catch (error) {
     console.error("Error in approveUsers ", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+const addUsersToGroup = async (users, groupId) => {
+  try {
+    if (users.length == 0) {
+      return;
+    }
+    const insertMappingsQuery = `
+    INSERT INTO \`group-user-mappings\` (groupId, userId)
+    VALUES ${users.map((userId) => `(${groupId}, ${userId})`).join(", ")}
+  `;
+    await db.query(insertMappingsQuery);
+  } catch (error) {
+    console.error("Error in addUsersToGroup ", error);
+    throw error;
   }
 };
