@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const JWT_SECRET = process.env.JWT_SECRET;
 const db = require("../database/index");
 const smsService = require("../services/smsService");
+const { DEFAULT_GROUP_ID } = require("../constants/admin");
 // const { sendPasswordResetEmail } = require("../utils/email");
 
 // Function to register a new user
@@ -142,9 +143,24 @@ exports.getAllUsers = async (req, res) => {
 exports.approveAllUsers = async (req, res) => {
   try {
     const { users } = req.body;
-    // update all users isApproved = 1
-    const sql = `UPDATE users SET isApproved = 1 WHERE id IN (?)`;
-    await db.query(sql, [users]);
+    if (users.length == 0) {
+      return res.status(400).json({ message: "No users to approve" });
+    }
+    if (users && users.length > 0) {
+      // update all users isApproved = 1
+      const sql = `UPDATE users SET isApproved = 1 WHERE id IN (?)`;
+      await db.query(sql, [users]);
+
+      // add all users in `group-user-mappings`
+      const insertMappingsQuery = `
+          INSERT INTO \`group-user-mappings\` (groupId, userId)
+          VALUES ${users
+            .map((userId) => `(${DEFAULT_GROUP_ID}, ${userId})`)
+            .join(", ")}
+        `;
+      await db.query(insertMappingsQuery);
+    }
+
     res.json({ message: "Users approved successfully" });
   } catch (error) {
     console.error("Error in approveUsers ", error);
