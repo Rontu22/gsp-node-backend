@@ -161,7 +161,13 @@ exports.getAllMessages = async (req, res) => {
 
     const query = "SELECT * FROM chats WHERE groupId = ? LIMIT ? OFFSET ?";
     const [messages] = await db.query(query, [groupId, limit, offset]);
-    return res.json(messages);
+    if (!messages) {
+      return res.status(404).json({ message: "Messages not found" });
+    }
+    const countQuery = "SELECT COUNT(*) as count FROM chats WHERE groupId = ?";
+    const [count] = await db.query(countQuery, [groupId]);
+    const total = count[0].count;
+    res.json({ messages, total });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -204,7 +210,12 @@ exports.getAllMessagesFromStartDate = async (req, res) => {
     if (!messages) {
       return res.status(404).json({ message: "Messages not found" });
     }
-    return res.json(messages);
+
+    const countQuery =
+      "SELECT COUNT(*) as count FROM chats WHERE sentTime >= ? and groupId = ?";
+    const [count] = await db.query(countQuery, [startDate, groupId]);
+    const total = count[0].count;
+    return res.json({ messages, total });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -241,7 +252,11 @@ exports.getAllMessagesFromMessageId = async (req, res) => {
     if (!messages) {
       return res.status(404).json({ message: "Messages not found" });
     }
-    return res.json(messages);
+    const countQuery =
+      "SELECT COUNT(*) as count FROM chats WHERE id >= ? and groupId = ?";
+    const [count] = await db.query(countQuery, [messageId, groupId]);
+    const total = count[0].count;
+    return res.json({ messages, total });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

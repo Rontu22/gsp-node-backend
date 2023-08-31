@@ -6,4 +6,6 @@ router.get("/get-all-users", usersController.getAllUsers);
 
 router.get("/get-user-by-id", usersController.getUserById);
 
+router.get("/get-user-status", usersController.getUserStatus);
+
 module.exports = router;
