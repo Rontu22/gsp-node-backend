@@ -43,7 +43,9 @@ exports.getUserStatus = async (req, res) => {
       [id]
     );
     if (user.length === 0) {
-      return res.status(400).json({ message: "User does not exist" });
+      return res
+        .status(400)
+        .json({ message: "User does not exist", role: "user" });
     }
     return res.status(200).json(user[0]);
   } catch (error) {
