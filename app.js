@@ -1,3 +1,4 @@
+const fs = require("fs");
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
@@ -11,13 +12,27 @@ const app = express();
 
 const { Server } = require("socket.io");
 app.use(cors()); // Cross-origin resource sharing
-const server = http.createServer(app);
+const server = http.createServer(
+  {
+    key: fs.readFileSync(
+      "/etc/letsencrypt/live/backend.gsp-stage.free.nf/privkey.pem"
+    ),
+    cert: fs.readFileSync(
+      "/etc/letsencrypt/live/backend.gsp-stage.free.nf/cert.pem"
+    ),
+    requestCert: false,
+    rejectUnauthorized: false,
+  },
+  app
+);
 
 const io = new Server(server, {
+  path: "/socket/socket.io",
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
+  transport: "websocket",
 });
 // app.use(function (req, res, next) {
 //   const allowedOrigins = [
