@@ -155,11 +155,18 @@ exports.updateMessage = async (req, res) => {
 
 exports.getAllMessages = async (req, res) => {
   try {
-    const { groupId } = req.query;
+    const { groupId, order } = req.query;
     const limit = parseInt(req.query.limit) || 1000;
     const offset = parseInt(req.query.offset) || 0;
 
-    const query = "SELECT * FROM chats WHERE groupId = ? LIMIT ? OFFSET ?";
+    // Define the default order if not provided
+    const defaultOrder = "ASC";
+
+    // Define the SQL query with the ORDER BY clause based on the "id" column
+    const query = `SELECT * FROM chats WHERE groupId = ? ORDER BY id ${
+      order || defaultOrder
+    } LIMIT ? OFFSET ?`;
+
     const [messages] = await db.query(query, [groupId, limit, offset]);
     if (!messages) {
       return res.status(404).json({ message: "Messages not found" });
