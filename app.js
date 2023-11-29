@@ -26,15 +26,16 @@ const server = http.createServer(
   app
 );
 
-const io = new Server(server, 
-//   {
-//   path: "/socket/socket.io",
-//   cors: {
-//     origin: "*",
-//     methods: ["GET", "POST"],
-//   },
-//   transport: "websocket",
-// }
+const io = new Server(
+  server
+  //   {
+  //   path: "/socket/socket.io",
+  //   cors: {
+  //     origin: "*",
+  //     methods: ["GET", "POST"],
+  //   },
+  //   transport: "websocket",
+  // }
 );
 // app.use(function (req, res, next) {
 //   const allowedOrigins = [

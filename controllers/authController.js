@@ -6,6 +6,124 @@ const db = require("../database/index");
 const smsService = require("../services/smsService");
 // const { sendPasswordResetEmail } = require("../utils/email");
 
+exports.login = async (req, res) => {
+  try {
+    const { mobile, code } = req.body;
+
+    // Check if the mobile number exists in the mobile_code_mappings table
+    const userMapping = await getMobileCodeMapping(mobile);
+
+    if (!userMapping) {
+      return res.status(200).json({
+        status: "NO_USER",
+        message: "User does not exist",
+      });
+    }
+
+    // Check if the provided code matches the code in the database
+    if (userMapping.code !== code) {
+      return res.status(200).json({
+        status: "WRONG_CODE",
+        message: "Wrong pin code",
+      });
+    }
+    console.log("User Mapping : ", userMapping);
+    const user = await getUserByMobileNumber(mobile);
+
+    // Login successful
+    res.json({
+      status: "SUCCESS",
+      message: "Login success",
+      userId: user.id,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getMobileCodeMapping = async (mobile) => {
+  try {
+    const sql = `
+      SELECT *
+      FROM users u
+      JOIN mobile_code_mappings m ON u.mobile = m.mobile
+      WHERE u.mobile = ?
+    `;
+    const [rows] = await db.query(sql, [mobile]);
+    console.log("ROWS : ", rows);
+
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    console.error("Error in getMobileCodeMapping : ", error);
+    throw error;
+  }
+};
+
+const getUserByMobileNumber = async (mobile) => {
+  try {
+    const sql = "SELECT * FROM users WHERE mobile = ?";
+    const [rows] = await db.query(sql, [mobile]);
+
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    console.error("Error in getUserByMobileNumber : ", error);
+    throw error;
+  }
+};
+
+exports.signup = async (req, res) => {
+  try {
+    const { mobile, code } = req.body;
+
+    // Check if the mobile number exists in the mobile_code_mappings table
+    const isUserPresent = await checkUserPresence(mobile);
+
+    if (isUserPresent) {
+      return res.status(200).json({
+        status: "USER_EXISTS",
+        message: "User already exists",
+      });
+    }
+
+    // If the user does not exist, proceed with signup
+    await createUserMapping(mobile, code);
+
+    // Sign up successful
+    res.json({
+      status: "SUCCESS",
+      message: "Signup success",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Function to check if the mobile number exists in the database
+const checkUserPresence = async (mobile) => {
+  try {
+    const sql = "SELECT * FROM mobile_code_mappings WHERE mobile = ?";
+    const [rows] = await db.query(sql, [mobile]);
+
+    return rows.length > 0;
+  } catch (error) {
+    console.error("Error in checkUserPresence : ", error);
+    throw error;
+  }
+};
+
+// Function to create a new user mapping in the database
+const createUserMapping = async (mobile, code) => {
+  try {
+    const sql = "INSERT INTO mobile_code_mappings (mobile, code) VALUES (?, ?)";
+    await db.query(sql, [mobile, code]);
+  } catch (error) {
+    console.error("Error in createUserMapping : ", error);
+    throw error;
+  }
+};
+
 // Function to register a new user
 exports.register = async (req, res) => {
   try {
